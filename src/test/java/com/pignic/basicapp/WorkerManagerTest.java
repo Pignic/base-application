@@ -20,13 +20,14 @@ public class WorkerManagerTest {
 	@Test
 	public void testWorkerManager() {
 		final List<Integer> list = new ArrayList<Integer>();
-		for (int i = 0; i < 123; ++i) {
+		for (int i = 0; i < 234; ++i) {
 			list.add(i);
 		}
 		try {
-			final WorkerManager<Integer, Integer> wm = new WorkerManager<Integer, Integer>(list, 4, TestJob.class);
-			final List<Integer> result = wm.work();
-			for (int i = 0; i < 123; ++i) {
+			final WorkerManager<Integer, Integer> wm = new WorkerManager<Integer, Integer>(list, 8, TestJob.class,
+					0.3f);
+			final List<Integer> result = wm.work(false);
+			for (int i = 0; i < 234; ++i) {
 				Assert.assertTrue(i + 200 == result.get(i));
 				Assert.assertTrue(list.get(i) + 200 == result.get(i));
 			}

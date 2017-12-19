@@ -20,10 +20,10 @@ public class MouseHandler extends MouseAdapter {
 	@Override
 	public void mouseDragged(final MouseEvent event) {
 		if ((event.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) == InputEvent.BUTTON1_DOWN_MASK) {
-			if (isDragged) {
-				application.getCenter()
-						.sub(new Vector2D((event.getX() - previousMousePos.x) / application.getZoomLevel(),
-								(event.getY() - previousMousePos.y) / application.getZoomLevel()));
+			if (application.isAllowDrag() && isDragged) {
+				application.getCenter().sub(new Vector2D(
+						(event.getX() - previousMousePos.x) / application.getZoomLevel() / application.getScale(),
+						(event.getY() - previousMousePos.y) / application.getZoomLevel() / application.getScale()));
 			}
 		}
 		if ((event.getModifiersEx() & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK) {

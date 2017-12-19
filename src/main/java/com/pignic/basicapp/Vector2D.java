@@ -45,6 +45,10 @@ public class Vector2D {
 		return Math.sqrt(Math.pow(other.x - x, 2) + Math.pow(other.y - y, 2));
 	}
 
+	public double getAngle() {
+		return Math.atan2(y, x);
+	}
+
 	public double getLength() {
 		return Math.sqrt(x * x + y * y);
 	}

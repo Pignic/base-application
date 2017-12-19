@@ -3,6 +3,7 @@ package com.pignic.basicapp;
 import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +19,10 @@ public class BaseApplication extends JFrame {
 
 		protected BaseApplication container;
 
+		public BaseApplication getContainer() {
+			return container;
+		}
+
 		public abstract void init();
 
 		public abstract void render(Graphics2D g);
@@ -27,13 +32,19 @@ public class BaseApplication extends JFrame {
 
 	private static final long serialVersionUID = 3371039102546153786L;
 
+	private boolean allowDrag = true;
+
 	private final Vector2D center = new Vector2D();
 
 	private final Engine engine;
 
 	private int fps = 0;
 
+	private boolean isFullScreen = false;
+
 	private final MouseHandler mouseHandler;
+
+	private float scale = 1;
 
 	private final JPanel scene;
 
@@ -49,6 +60,7 @@ public class BaseApplication extends JFrame {
 		addMouseWheelListener(mouseHandler);
 		addMouseMotionListener(mouseHandler);
 		scene = new JPanel() {
+
 			private static final long serialVersionUID = -2794503265814939228L;
 
 			@Override
@@ -60,11 +72,11 @@ public class BaseApplication extends JFrame {
 				g2d.dispose();
 			}
 		};
-		add(scene);
 		setSize(width, height);
-		center.set(width / 2f, height / 2f);
-		setVisible(true);
+		add(scene);
+		center.set(scene.getWidth() / 2f, scene.getHeight() / 2f);
 		engine.init();
+		setVisible(true);
 	}
 
 	public Vector2D getCenter() {
@@ -73,8 +85,8 @@ public class BaseApplication extends JFrame {
 
 	public Vector2D getCoordinateToScreen(final double x, final double y) {
 		final Vector2D coordinates = new Vector2D();
-		coordinates.x = (x - center.x) * zoomLevel + getWidth() / 2f;
-		coordinates.y = (y - center.y) * zoomLevel + getHeight() / 2f;
+		coordinates.x = (x - center.x) * zoomLevel * scale + scene.getWidth() / 2f;
+		coordinates.y = (y - center.y) * zoomLevel * scale + scene.getHeight() / 2f;
 		return coordinates;
 	}
 
@@ -86,14 +98,18 @@ public class BaseApplication extends JFrame {
 		return fps;
 	}
 
+	public float getScale() {
+		return scale;
+	}
+
 	public JPanel getScene() {
 		return scene;
 	}
 
 	public Vector2D getScreenToCoordinate(final double x, final double y) {
 		final Vector2D screen = new Vector2D();
-		screen.x = x / zoomLevel + center.x - getWidth() / (2 * zoomLevel);
-		screen.y = y / zoomLevel + center.y - getHeight() / (2 * zoomLevel);
+		screen.x = x / zoomLevel + center.x - scene.getWidth() / (2 * zoomLevel * scale);
+		screen.y = y / zoomLevel + center.y - scene.getHeight() / (2 * zoomLevel * scale);
 		return screen;
 	}
 
@@ -105,14 +121,30 @@ public class BaseApplication extends JFrame {
 		return zoomLevel;
 	}
 
+	public boolean isAllowDrag() {
+		return allowDrag;
+	}
+
+	public void setAllowDrag(final boolean allowDrag) {
+		this.allowDrag = allowDrag;
+	}
+
+	public void setScale(final float scale) {
+		this.scale = scale;
+	}
+
+	public void setZoomLevel(final float zoomLevel) {
+		this.zoomLevel = zoomLevel;
+	}
+
 	public void startMainLoop(final int desiredFPS) {
 		final long updateTick = (long) (1000f / desiredFPS);
 		final BaseApplication instance = this;
 		final Timer timer = new Timer((int) updateTick, new ActionListener() {
-			private int updateCount = 0;
 			private long lastFpsTime = 0;
 			private long lastLoopTime = System.currentTimeMillis();
 			private long now;
+			private int updateCount = 0;
 			private long updateLength;
 
 			@Override
@@ -134,12 +166,28 @@ public class BaseApplication extends JFrame {
 		timer.start();
 	}
 
+	public boolean toggleFullSreen() {
+		final GraphicsDevice device = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice();
+		isFullScreen = !isFullScreen;
+		dispose();
+		setUndecorated(isFullScreen);
+		setResizable(!isFullScreen);
+		device.setFullScreenWindow(isFullScreen ? this : null);
+		setVisible(true);
+		validate();
+		return isFullScreen;
+	}
+
 	public void zoomIn() {
-		zoomLevel *= 1.1f;
+		zoomLevel *= 1f + 0.1f
+		// / scale
+		;
 	}
 
 	public void zoomOut() {
-		zoomLevel *= 0.9f;
+		zoomLevel *= 1f - 0.1f
+		// / scale
+		;
 	}
-
 }
